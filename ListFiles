@@ -1,0 +1,56 @@
+Sub ListFiles()
+
+    Dim objFSO As Object
+    Dim objFolder As Object
+    Dim objFile As Object
+    
+    Dim folderPath As String
+    Dim extensionList As String
+    Dim outputFile As String
+    
+    Dim rowNum As Long
+    Dim lastRow As Long
+    
+    ' フォルダのパス
+    folderPath = "C:\Users\username\Documents\TestFolder\"
+    
+    ' 検索するファイルの拡張子リスト
+    extensionList = "*.xlsx;*.xls;*.xlsm;*.doc;*.docx;*.docm;"
+    
+    ' 結果を出力するファイル
+    outputFile = "C:\Users\username\Documents\filelist.xlsx"
+    
+    ' 出力するシート
+    With ThisWorkbook.Sheets("Sheet1")
+        ' ヘッダー行
+        .Range("A1").Value = "File Path"
+        rowNum = 2
+        
+        ' FileSystemObjectを作成
+        Set objFSO = CreateObject("Scripting.FileSystemObject")
+        Set objFolder = objFSO.GetFolder(folderPath)
+        
+        ' 拡張子リストに含まれるファイルを検索して、ファイルパスをシートに書き出す
+        For Each objFile In objFolder.Files
+            If InStr(1, extensionList, objFSO.GetExtensionName(objFile.Path) & ";") > 0 Then
+                .Range("A" & rowNum).Value = objFile.Path
+                rowNum = rowNum + 1
+            End If
+        Next objFile
+        
+        ' 結果をファイルに保存
+        lastRow = .Cells(.Rows.Count, "A").End(xlUp).Row
+        .Range("A1:A" & lastRow).EntireColumn.AutoFit
+        .Range("A1:A" & lastRow).HorizontalAlignment = xlLeft
+        .Range("A1:A" & lastRow).VerticalAlignment = xlTop
+        .Parent.SaveAs Filename:=outputFile, FileFormat:=xlOpenXMLWorkbook
+    End With
+    
+    ' オブジェクトを解放
+    Set objFile = Nothing
+    Set objFolder = Nothing
+    Set objFSO = Nothing
+    
+    MsgBox "完了しました。"
+
+End Sub
